@@ -110,5 +110,5 @@ Notes:
 Authro: Zhao Zhe(Alex)
 
 
-![Donate](./DONATE.JPG)
-![Donate](./DONATE_Z.JPG)
+![Donate](./DONATE.JPG =50x50)
+![Donate](./DONATE_Z.JPG =50x50)
