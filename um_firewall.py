@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # LICENSE: Apache 2.0
 # Copyright 2021-2023 Zhao Zhe, Alex Zhao
+#
+# Umbrella Dynamic Firewall on FreeBSD ipfw
+#
 # Python Script direct call ipfw to update two types of access
 # device with DHCPed IP address
 # target IP/Port according to blocked list IPs
@@ -58,6 +61,7 @@
 # e.g. Token: a long data share across router and client
 # Basic security
 #
+
 import os;
 import json;
 import subprocess;
