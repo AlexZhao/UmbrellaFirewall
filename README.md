@@ -44,10 +44,13 @@ Above two folder remap to /etc/ and /usr/local/etc/
 # This is a tool used for access network for technology and science only do not use it for bad things    
 
 
-# Umbrella is an implementation approach of Defensh in Depth (DiD)    
+# Umbrella is an implementation approach of Defense in Depth (DiD)    
 UmbrellaFirewall is the frontline of the network security which block all by default from bidirectional:    
 	1. From WAN to LAN   
 	2. From LAN to WAN   
+
+UmbreallaFirewall control traffic from public to internal with opened ports control and also with the capabilities
+to control internal to public based on traffic monitoring
 
 
 # How to build the similiar home router    
@@ -70,7 +73,7 @@ Basic Connectivity
 Within MainRouter     
 
 
-Bhyve has limitation only works on X86 architecture currently.     
+Bhyve has limitation only works on X86 architecture currently, Linux DMZ can base on physical machine connected to the same internal network.     
 
                        
                      Modem   
@@ -78,13 +81,15 @@ Bhyve has limitation only works on X86 architecture currently.
                        |
                        |
                        V
-         -------------------------------
+        --------------------------------
         |                              |
         |  FreeBSD/TrueNAS             |
-        |                              |
+        |   | firewall                 |
         |                              |
         |  Linux DMZ Bhyve on FreeBSD  |
-        |                              |
+        |   | agent                    |
+        |   | telescope                |
+        |   | nw                       |
         |                              |
         -------------------------------|
                        |
@@ -95,7 +100,7 @@ Bhyve has limitation only works on X86 architecture currently.
                        |----|------|------------|
                        V    V      V            V
                      WIFI  WIFI   ....        Nvidia(online analysis)
-
+                                                | prophet
 
 
 Notes:
@@ -110,5 +115,5 @@ Notes:
 Authro: Zhao Zhe(Alex)
 
 
-![Donate](./DONATE.JPG =50x50)
-![Donate](./DONATE_Z.JPG =50x50)
+![Donate](./DONATE.JPG)
+![Donate](./DONATE_Z.JPG)
