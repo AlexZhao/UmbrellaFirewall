@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#
 # LICENSE: Apache 2.0
 # Copyright 2021-2023 Zhao Zhe, Alex Zhao
 #
@@ -61,18 +62,19 @@
 # e.g. Token: a long data share across router and client
 # Basic security
 #
-
-import os;
-import json;
-import subprocess;
-import re;
-
-from base64 import b64encode
+#
+import os
+import json
+import subprocess
+import re
+import sys
 
 from flask import Flask
-from flask_restful import reqparse, abort, Resource, Api
+from flask_restful import reqparse, Resource, Api
 
 g_dummy_test = False
+# Basic preshared key based authentication
+g_psk = None
 
 app = Flask(__name__)
 api = Api(app)
@@ -339,10 +341,11 @@ g_ipfw_intf = IPFWIntf()
 parser = reqparse.RequestParser()
 parser.add_argument('ip_addr')
 parser.add_argument('mon_addr')
+parser.add_argument('psk')
 
 class MainPage(Resource):
     def get(self):
-        return {'dynamic_firewall': 'IPFW dynamic firewall'}
+        return {'DynamicFirewall': 'IPFW Dynamic Firewall'}
 
 class ListBlockSrcIP(Resource):
     def get(self):
@@ -359,6 +362,11 @@ class AddBlockSrcIP(Resource):
         """
         Post add block src IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"add_block_src_ip": "authentication failed"}
+
         src_ip_addr = parser.parse_args()['ip_addr']
         if src_ip_addr:
             return g_ipfw_intf.block_src_ip(src_ip_addr)
@@ -372,6 +380,11 @@ class DelBlockSrcIP(Resource):
         """
         Post del block src IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"del_block_src_ip": "authentication failed"}
+        
         src_ip_addr = parser.parse_args()['ip_addr']
         if src_ip_addr:
             return g_ipfw_intf.unblock_src_ip(src_ip_addr)
@@ -385,6 +398,11 @@ class AddBlockSrcMAC(Resource):
         """
         Post add block src MAC
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"add_block_src_mac": "authentication failed"}
+        
 
 class DelBlockSrcMAC(Resource):
     def get(self):
@@ -393,6 +411,11 @@ class DelBlockSrcMAC(Resource):
         """
         Post del block src MAC
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"del_block_src_mac": "authentication failed"}
+
 
 class ListBlockTargetIP(Resource):
     def get(self):
@@ -410,6 +433,11 @@ class AddBlockTargetIP(Resource):
         """
         Post add block target IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"add_block_target_ip": "authentication failed"}
+            
         tgt_ip_addr = parser.parse_args()['ip_addr']
         if tgt_ip_addr:
             return g_ipfw_intf.block_target_ip(tgt_ip_addr)
@@ -423,6 +451,11 @@ class DelBlockTargetIP(Resource):
         """
         Post del block target IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"del_block_target_ip": "authentication failed"}
+
         tgt_ip_addr = parser.parse_args()['ip_addr']
         if tgt_ip_addr:
             return g_ipfw_intf.unblock_target_ip(tgt_ip_addr)
@@ -436,6 +469,11 @@ class AddFwdTargetIp(Resource):
         """
         Post add forward target IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"add_fwd_target_ip": "authentication failed"}
+
         fwd_tgt_ip_addr = parser.parse_args()['ip_addr']
         if fwd_tgt_ip_addr:
             return g_ipfw_intf.add_ip_to_tbl(fwd_tgt_ip_addr, "fwdlist")
@@ -449,6 +487,11 @@ class DelFwdTargetIp(Resource):
         """
         Post del forward target IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"del_fwd_target_ip": "authentication failed"}
+
         fwd_tgt_ip_addr = parser.parse_args()['ip_addr']
         if fwd_tgt_ip_addr:
             return g_ipfw_intf.del_ip_from_tbl(fwd_tgt_ip_addr, "fwdlist")
@@ -462,6 +505,11 @@ class ClrFwdTargetIp(Resource):
         """
         Post clr forward target IPs within table fwdlist
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"clr_fwd_target_ip": "authentication failed"}
+
         fwd_tgt_table = parser.parse_args()['table']
         if fwd_tgt_table:
             if fwd_tgt_table == "fwdlist":
@@ -483,6 +531,11 @@ class AddLockDownIP(Resource):
         """
         POST add lockdown device IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"add_lockdown_dev_ip": "authentication failed"}
+
         lockdown_dev_ip_addr = parser.parse_args()['ip_addr']
         if lockdown_dev_ip_addr:
             return g_ipfw_intf.add_ip_to_tbl(lockdown_dev_ip_addr, "lockdownlist")
@@ -496,6 +549,11 @@ class DelLockDownIP(Resource):
         """
         POST delete lockdown device IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"del_lockdown_dev_ip": "authentication failed"}
+
         lockdown_dev_ip_addr = parser.parse_args()['ip_addr']
         if lockdown_dev_ip_addr:
             return g_ipfw_intf.del_ip_from_tbl(lockdown_dev_ip_addr, "lockdownlist")
@@ -514,6 +572,11 @@ class DMZAllowTargetIP(Resource):
         """
         Post add DMZ target IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"add_dmz_target_ip": "authentication failed"}
+
         dmz_tgt_ip_addr = parser.parse_args()['ip_addr']
         if dmz_tgt_ip_addr:
             return g_ipfw_intf.add_ip_to_tbl(dmz_tgt_ip_addr, "dmzallowlist")
@@ -530,6 +593,11 @@ class DMZBlockTargetIP(Resource):
         """
         Post remove DMZ target IP
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"del_dmz_target_ip": "authentication failed"}
+
         dmz_tgt_ip_addr = parser.parse_args()['ip_addr']
         if dmz_tgt_ip_addr:
             return g_ipfw_intf.del_ip_from_tbl(dmz_tgt_ip_addr, "dmzallowlist")
@@ -586,6 +654,11 @@ class AddStrictMonClient(Resource):
         """
         Post Add new device to strict_hosts_list
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"add_strict_mon_host": "authentication failed"}
+
         strict_mon_ip_addr = parser.parse_args()['ip_addr']
         if strict_mon_ip_addr:
             return g_ipfw_intf.add_ip_to_skipto_tbl(strict_mon_ip_addr, "strict_hosts_list")
@@ -600,13 +673,18 @@ class DelStrictMonClient(Resource):
         return {'usage': "POST to Del host to strict_hosts_list table"}
     def post(self):
         """
-        Post Add new device to strict_hosts_list
+        Post Del device from strict_hosts_list
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"del_strict_mon_host": "authentication failed"}
+
         strict_mon_ip_addr = parser.parse_args()['ip_addr']
         if strict_mon_ip_addr:
             return g_ipfw_intf.del_ip_from_skipto_tbl(strict_mon_ip_addr, "strict_hosts_list")
         else:
-            return {"add_strict_mon_host": "malformed request"}
+            return {"del_strict_mon_host": "malformed request"}
 
 class ListStrictMonClient(Resource):
     """
@@ -629,6 +707,11 @@ class AddTargetForMonClient(Resource):
         """
         POST Add target IP to mon host access table
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"add_target_for_strict_host": "authentication failed"}
+
         strict_mon_ip_addr = parser.parse_args()["mon_addr"]
         target_ip_addr = parser.parse_args()['ip_addr']
         if strict_mon_ip_addr and target_ip_addr:
@@ -649,6 +732,11 @@ class DelTargetForMonClient(Resource):
         """
         POST Del target IP from mon host access table
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"del_target_for_strict_host": "authentication failed"}
+
         strict_mon_ip_addr = parser.parse_args()["mon_addr"]
         target_ip_addr = parser.parse_args()["ip_addr"]
         if strict_mon_ip_addr and target_ip_addr:
@@ -681,6 +769,11 @@ class CleanTargetForMonClient(Resource):
         """
         POST Clean all IP from mon target table
         """
+        if g_psk:
+            session_psk = parser.parse_args()['psk']
+            if session_psk != g_psk:
+                return {"clean_target_for_strict_host": "authentication failed"}
+
         mon_addr = parser.parse_args()["mon_addr"]
         if mon_addr:
             idx = mon_addr.rsplit('.')[3]
@@ -697,4 +790,27 @@ api.add_resource(ListTargetForMonClient, '/list_target_for_strict_host')
 api.add_resource(CleanTargetForMonClient, '/clean_target_for_strict_host')
 
 if __name__ == '__main__':
-    app.run(ssl_context='adhoc', host="192.168.10.1", port=6466)
+    um_firewall_config = "/etc/um_firewall.conf"
+
+    if sys.argv[1]:
+        um_firewall_config = sys.argv[1]
+
+    try:
+        config_file = open(um_firewall_config, 'r')
+        config = json.load(config_file)
+    except BaseException as e:
+        print("Loading configuration file ", um_firewall_config, " failed with exception ", e)
+        sys.exit()
+
+    um_firewall_host = "127.0.0.1"
+    if "host" in config:
+        um_firewall_host = config["host"]
+
+    um_firewall_port = 6466
+    if "port" in config:
+        um_firewall_port = config["port"]
+    
+    if "psk" in config:
+        g_psk = config["psk"]
+
+    app.run(ssl_context='adhoc', host=um_firewall_host, port=um_firewall_port)
