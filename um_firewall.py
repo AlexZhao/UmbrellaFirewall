@@ -3,14 +3,15 @@
 # LICENSE: Apache 2.0
 # Copyright 2021-2023 Zhao Zhe, Alex Zhao
 #
-# Umbrella Dynamic Firewall on FreeBSD ipfw
+# Umbrella Dynamic Firewall 
+#
+# Firewall module based on FreeBSD ipfw
 #
 # Python Script direct call ipfw to update two types of access
 # device with DHCPed IP address
 # target IP/Port according to blocked list IPs
 # totally based on ipfw for bidirectional access control
 # flask as the restful API endpint received request from DMZ VM
-# home use 192.168.10.84 - > 192.168.10.1
 # with totally controlled port and record
 # DMZ will analysis traffic and push firewall update to router
 # e.g.
@@ -24,12 +25,12 @@
 # Lockdown mode for specific source device
 #   ipfw table lockdownlist add IP
 #   ipfw table lockdownlist delete IP
+#
 # Lockdown mode will disable all access to external network but can be proxied
 # through shadowsocks proxy, dynamic firewall can base on this tech to gradulally
 # open traffic/close traffic to measure defined device behavior with telescope
 # to locate unknow threats
 #
-# TODO:
 # Basic Target Block list
 #   ipfw table tblocklist add IP
 #   ipfw table tblocklist delete IP
@@ -41,28 +42,6 @@
 # Forward list according to DNS configuration and analysis results
 #   regex match in Fedora Bunker for domain name direct bypass GFW
 #   ipfw table fwdlist
-# port = 6466, hex df dynamic firewall
-# Request
-#   {
-#       cmd: blocklist_add
-#       ip: [192.168.10.55]
-#   }
-#
-#   {
-#       cmd: blocklist_del
-#       ip: []
-#   }
-#
-# Response
-#   {
-#       status: success/unsuccess
-#   }
-#
-# Add Simple share secrect for security control token
-# e.g. Token: a long data share across router and client
-# Basic security
-#
-#
 import os
 import json
 import subprocess
@@ -80,6 +59,7 @@ app = Flask(__name__)
 api = Api(app)
 
 # IPFWIntf direct opeate on ipfw firewall command
+# This is the operating system kernel relevant part
 class IPFWIntf:
     def __init__(self):
         """

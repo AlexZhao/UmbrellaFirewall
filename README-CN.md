@@ -1,22 +1,21 @@
 # UmbrellaFirewall
 
-English | [简体中文](README-CN.md)    
+[English](README.md) | 简体中文    
 
 
-# Firewall on TrueNAS(FreeBSD)   
+# FreeBSD 防火墙 ipfw      
+FreeBSD 操作系统 ipfw 防火墙配置工具可以阻止多种网络流量，动态的Umbrella Firewall根据网络流量需要通过DNS查询来     
+解析实际访问的IP地址来对防火墙进行动态配置，解析内网所有设备DNS解析的工作由 Linux DMZ 服务器提供，幷由Umbreall Agent   
+进行路由器上的防火墙更新。     
 
-ipfw based firewall configuration which will block many different types of traffic    
-it based on the ideas that it only open the access when you really need it by lookup the domain name from internal network   
-The open access agent is working DMZ(Linux) server    
+FreeBSD 路由器的配置     
 
-Configuration on TrueNAS/FreeBSD    
-
-Update /etc/syslog.conf    
+修改 /etc/syslog.conf 已支持ipfw 防火墙日志        
 ```
 security.*                                      @log.auditd.local    
 ```
 
-log.auditd.local is the DMZ hostname configure its fixed IP address in /etc/hosts    
+log.auditd.local 需要静态配置到 /etc/hosts 来提供静态解析，syslog会更新日志到log.auditd.local所指定的服务器         
 ```
 ...   
 192.168.10.?		log.auditd.local    
@@ -24,7 +23,7 @@ log.auditd.local is the DMZ hostname configure its fixed IP address in /etc/host
 
 ```
 
-Update /etc/rc.conf for FreeBSD initial script       
+修改 /etc/rc.conf 添加 FreeBSD 启动脚本           
 ```
 # Enable Firewall for the NAS server
 firewall_enable="YES"
@@ -35,27 +34,28 @@ gateway_enable="YES"
 firewall_nat_enable="YES"
 ```
 
-If you use TrueNAS, it requires to modify /conf/base/etc  or  /conf/base/etc/local     
-Above two folder remap to /etc/ and /usr/local/etc/    
+如果使用TrueNAS作为主路由器系统，那么需要修改 /conf/base/etc 和 /conf/base/etc/local     
+来保证重启配置会更新到 /etc/ 和 /user/local/etc/
 
-# Umbrella is an implementation approach of Defense in Depth (DiD)    
-UmbrellaFirewall is the frontline of the network security which block all by default from bidirectional:    
-	1. From WAN to LAN   
-	2. From LAN to WAN   
+# Umbrella 动态防火墙是一个纵深网络防御的具体实现        
+Umbrella防火墙是网络安全系统的第一道防线，默认从两个方向来控制网络安全访问     
+    1. 从广域网到内网
+    2. 从内网到广域网
 
-UmbreallaFirewall control traffic from public to internal with opened ports control and also with the capabilities
-to control internal to public based on traffic monitoring
+Umbrella防火墙不光控制开放给外部访问的IP地址和端口，也控制通过Umbrella防火墙向外部访问的IP和端口    
 
+# 如何自己搭建一套Umbreall防火墙系统        
 
-# How to build the similiar home router    
-
-  PC install TrueNAS or FreeBSD OS and connect to optical modem or other modem provided by network operator       
-  Configure the FreeBSD with bhyve, if you are not familiar with BSD, recommend to use TrueNAS    
+    1. 一台PC系统，最好有多个磁盘组成的阵列    
+    2. 按照说明书安装 FreeBSD/TrueNAS系统    
+    3. 配置FreeBSD bhyve来运行Linux DMZ虚拟机    
+    4. 安装UmbreallaFirewall工程的内容到FreeBSD系统作为主路由器系统    
+    5. 将WiFi router配置为无线中继（非路由模式）   
+    6. 通过交换机连接WiFi router到FreeBSD路由器     
  
 
+基本网络拓扑结构     
 ```
-Basic Connectivity    
-
   --------> Modem ----> MainRouter ----> Switch ----> WiFi router configured as wifi access point(disable router functions)    
                             ^    
                             |   
@@ -64,11 +64,7 @@ Basic Connectivity
 
 
 
-Within MainRouter     
-
-
-Bhyve has limitation only works on X86 architecture currently, Linux DMZ can base on physical machine connected to the same internal network.     
-
+主路由器内部需要的网络组件         
                        
                      Modem   
                        ^
@@ -106,7 +102,7 @@ Notes:
 ```
 
 
-Authro: Zhao Zhe(Alex)
+作者: Zhao Zhe (Alex)
 
 
 ![Donate](./DONATE.JPG)
