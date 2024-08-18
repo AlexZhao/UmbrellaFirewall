@@ -103,7 +103,3 @@ Notes:
 
 
 作者: Zhao Zhe (Alex)
-
-
-![Donate](./DONATE.JPG)
-![Donate](./DONATE_Z.JPG)
